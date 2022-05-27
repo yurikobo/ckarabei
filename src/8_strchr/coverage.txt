@@ -1,0 +1,68 @@
+lcov -t "fizzbuzz" -o fizzbuzz.info -c -d .  
+genhtml -o report fizzbuzz.info //report -> index.html
+
+CFLAGS=-Wall
+LIBS=-lcheck
+
+all: sum2ints
+
+sum2ints: main.o implementation.o
+gcc -o sum2ints main.o implementation.o
+
+main.o: main.c implementation.h
+gcc $(CFLAGS) -c main.c
+
+implementation.o: implementation.c implementation.h
+gcc $(CFLAGS) -c implementation.c
+
+test: sum2ints-test
+./sum2ints-test
+
+sum2ints-test: implementation-test.o implementation.o
+gcc -o sum2ints-test implementation.o implementation-test.o $(LIBS)
+
+implementation-test.o: implementation-test.c implementation.h
+gcc $(CFLAGS) -c implementation-test.c
+
+
+1. собираем образ как у вертера - встаем на директорию проекта (на уровень выше src) выполняем:
+    docker build . -t mydock:1.0 -f materials/build/Dockerfile
+ 2. Запуск минивертера с этим же образом
+    docker run -it -v$(pwd)/src:/project/src --rm mydock:1.0
+ 3. Для запуска образа так чтобы остаться в консоли альпайна:
+    docker run -it -v$(pwd)/src:/project/src --entrypoint “/bin/bash” --rm mydock:1.0
+4. Для удаления образа:
+    docker rmi -f mydock:1.0
+
+
+#include <stdio.h>
+#include <string.h>
+// checkmk clean_mode=1 test_sprintf.check > test_s21_sprinrf.c
+#test sprinrf_pc_1
+  char str1[1024], str2[1024], c = ‘!’;
+  char *format = “Percent: %% % -+#010%c__%www/192.168.1.1”;
+  ck_assert_int_eg(sprintf(str1, format, c), s21_sprintf(str2, format, c));
+  ck_assert_str_eq(str1, str2);
+
+-lcheck -lsubunit -lm -lrt -lpthread
+
+#!/bin/bash
+rm -rfv ~/Library/Caches/*
+rm -rfv ~/Library/Application\ Support/Slack/Cache/*
+rm -rfv ~/Library/Application\ Support/Slack/Service\ Worker/CacheStorage/*
+rm -rfv ~/Library/Group\ Containers/6N38VWS5BX.ru.keepcoder.Telegram/account-570841890615083515/postbox/*
+rm -rfv ~/Library/Caches
+rm -rfv ~/Library/Application\ Support/Code/Cache
+rm -rfv ~/Library/Application\ Support/Code/CachedData
+rm -rfv ~/Library/Application\ Support/Code/CachedExtension
+rm -rfv ~/Library/Application\ Support/Code/CachedExtensions
+rm -rfv ~/Library/Application\ Support/Code/CachedExtensionVSIXs
+rm -rfv ~/Library/Application\ Support/Code/Code\ Cache
+rm -rfv ~/Library/Application\ Support/Slack/Cache
+rm -rfv ~/Library/Application\ Support/Slack/Code\ Cache
+rm -rfv ~/Library/Application\ Support/Slack/Service\ Worker/CacheStorage
+rm -rfv ~/Library/Application\ Support/Code/User/workspaceStorage
+echo -en "\033[31mSpace for the space!\n\033[0m"
+free_space=$(df -h | grep 'agidget' | awk '{print $4}')
+echo -en "\033[32m${free_space} are available now\n\033[0m"
+df -h ~

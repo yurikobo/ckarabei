@@ -1,0 +1,529 @@
+#include "./s21_sprintf.h"
+#include <stdio.h>
+#include <string.h>
+
+// checkmk clean_mode=1 test_sprintf.check > test_s21_sprinrf.c
+
+#test sprinrf_a_1
+    char str1[1240], str2[1240], c = '!';
+    char *format = "%+-10www";
+    ck_assert_int_eq(sprintf(str1, format, c), s21_sprintf(str2, format, c));
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_a_2
+    char str1[1240], str2[1240], c = 0;
+    char *format = "%+-10c";
+    ck_assert_int_eq(sprintf(str1, format, c), s21_sprintf(str2, format, c));
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_a_3
+    char str1[1240], str2[1240], c = 0;
+    char *format = "%10c";
+    ck_assert_int_eq(sprintf(str1, format, c), s21_sprintf(str2, format, c));
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_pc_1
+    char str1[10240], str2[10240], c = '!';
+    char *format = "Percent: %% % -+#010%c__%www/192.168.1.1";
+    ck_assert_int_eq(sprintf(str1, format, c, c), s21_sprintf(str2, format, c));
+    ck_assert_str_eq(str1, str2);
+    
+#test sprinrf_pc_2
+    char str1[10240], str2[10240], c = 'A';
+    char *format = "Percent: %\\% 55 % -+#wWw010%  c__%";
+    ck_assert_int_eq(sprintf(str1, format, c, c), s21_sprintf(str2, format, c));
+    ck_assert_str_eq(str1, str2);
+    
+#test sprinrf_pc_3
+    char str1[10240], str2[10240], c = '!';
+    char *format = "Percent: %www%";
+    ck_assert_int_eq(sprintf(str1, format, c), s21_sprintf(str2, format, c));
+    ck_assert_str_eq(str1, str2);
+    
+#test sprinrf_pc_4
+    char str1[10240], str2[10240];
+    char *format = "%%%%%%%%%";
+    char arg = 65;
+    int n1 = sprintf(str1, format, arg);
+    int n2 = s21_sprintf(str2, format, arg);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_es_1
+    char str1[10240], str2[10240], c = '!';
+    char *format = "Escape \a\b\r\t\v\n\e\0 sequence";
+    ck_assert_int_eq(sprintf(str1, format, c), s21_sprintf(str2, format, c));
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_i_1
+    char str1[10240], str2[10240];
+    char *format = "%0.*i, %i, %-*.i, %013i, %20i";
+    int n1 = sprintf(str1, format, 3, 123, -123, 5, 258, 0, -786);
+    int n2 = s21_sprintf(str2, format, 3, 123, -123, 5, 258, 0, -786);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+    
+#test sprinrf_i_2
+    char str1[10240], str2[10240];
+    char *format = "%hi, %hi, %i, %i, %li, %li";
+    int n1 = sprintf(str1, format, -32767, 32767, -2147483647, 2147483647, -9223372036854775807, 9223372036854775807);
+    int n2 = s21_sprintf(str2, format, -32767, 32767, -2147483647, 2147483647, -9223372036854775807, 9223372036854775807);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_i_3
+    char str1[10240], str2[10240];
+    char *format = "%hi, %hi, %i, %i, %li, %li";
+    int n1 = sprintf(str1, format, -2147483647, 2147483647, -9223372036854775807, 9223372036854775807, -32767, 32767);
+int n2 = s21_sprintf(str2, format, -2147483647, 2147483647, -9223372036854775807, 9223372036854775807, -32767, 32767);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_i_4
+    char str1[10240], str2[10240];
+    char *format = "%hi, %hi, %i, %i, %li, %li";
+    unsigned long long int arg = 9223372036854775807;
+    int n1 = sprintf(str1, format, arg, arg, arg, arg, arg, arg);
+    int n2 = s21_sprintf(str2, format, arg, arg, arg, arg, arg, arg);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_u_1
+    char str1[10240], str2[10240];
+    char *format = "%u, %10u, %-10u, %010u, %-010u";
+    unsigned int arg = 456;
+    int n1 = sprintf(str1, format, arg, arg, arg, arg, arg);
+    int n2 = s21_sprintf(str2, format, arg, arg, arg, arg, arg);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_u_2
+    char str1[10240], str2[10240];
+    char *format = "%+u, %u, %u, %lu, %hu, %u";
+    int n1 = sprintf(str1, format, 123, -123, 0, 9223372036854775807, 327679, 21474836479);
+    int n2 = s21_sprintf(str2, format, 123, -123, 0, 9223372036854775807, 327679, 21474836479);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_u_3
+    char str1[10240], str2[10240];
+    char *format = "%lu, %hu, %u";
+    int n1 = sprintf(str1, format, 9223372036854775807, 32767, 2147483647);
+    int n2 = s21_sprintf(str2, format, 9223372036854775807, 32767, 2147483647);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+    
+#test sprinrf_ui_1
+    char str1[10240], str2[10240];
+    int d = 1;
+    char *format = "%10u, %010i, %-10u, %.6i, %u";
+    int n1 = sprintf(str1, format, d, 0, -123, 586, 123456789123456);
+    int n2 = s21_sprintf(str2, format, d, 0, -123, 586, 123456789123456);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_c_1
+    char str1[10240], str2[10240];
+    char *format = "%010c, %10c, %-10c, %10.05c, %c";
+    int n1 = sprintf(str1, format, 219, 65, -65, 10, 0);
+    int n2 = s21_sprintf(str2, format, 219, 65, -65, 10, 0);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_c_2
+    char str1[10240], str2[10240], c = 65;
+    char *format = "%100c, %-15c, %015c, %-015c, %-+#0lhLc";
+    int n1 = sprintf(str1, format, c, c, c, c, c);
+    int n2 = s21_sprintf(str2, format, c, c, c, c, c);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_c_3
+    char str1[10240], str2[10240], c = 66;
+    char *format = "% 015c, % +015c, % +-015c, %025-c, % 15-0c";
+    int n1 = sprintf(str1, format, c, c, c, c, c);
+    int n2 = s21_sprintf(str2, format, c, c, c, c, c);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_c_4
+    char str1[10240], str2[10240], c = 67;
+    char *format = "%15+0c, %25+15c, %15+000c, %-+# 010c, %.c";
+    int n1 = sprintf(str1, format, c, c, c, c, c);
+    int n2 = s21_sprintf(str2, format, c, c, c, c, c);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_c_5
+    char str1[10240], str2[10240], c = 68;
+    char *format = "%#10.00c, %#015.00c, %15.c, %20.0+0c, %.15c";
+    int n1 = sprintf(str1, format, c, c, c, c, c);
+    int n2 = s21_sprintf(str2, format, c, c, c, c, c);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_c_6
+    char str1[10240], str2[10240], c = 69;
+    char *format = "%. 15c, %.-10c, %-. 10c, %015. 010c, %015. -10c";
+    int n1 = sprintf(str1, format, c, c, c, c, c);
+    int n2 = s21_sprintf(str2, format, c, c, c, c, c);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_c_7
+    char str1[10240], str2[10240], c = 70;
+    char *format = "%  .-c, %  .c, %-10.15c, %+-. 10c, %. 10-c";
+    int n1 = sprintf(str1, format, c, c, c, c, c);
+    int n2 = s21_sprintf(str2, format, c, c, c, c, c);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_c_8
+    char str1[10240], str2[10240], c = 71;
+    char *format = "%25.015c, %025.015c, %.60c, %#10.15c, %#15.20 10c";
+    int n1 = sprintf(str1, format, c, c, c, c, c);
+    int n2 = s21_sprintf(str2, format, c, c, c, c, c);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_c_9
+    char str1[10240], str2[10240], c = 72;
+    char *format = "%15.10-c, %#+- 0.15c, %+h.hc, %+2.l0c, %0l08c";
+    int n1 = sprintf(str1, format, c, c, c, c, c);
+    int n2 = s21_sprintf(str2, format, c, c, c, c, c);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_c_10
+    char str1[10240], str2[10240];
+    char *format = "%c, %c";
+    int n1 = sprintf(str1, format, '0', 0);
+    int n2 = s21_sprintf(str2, format, '0', 0);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_c_11
+    char str1[10240], str2[10240];
+    char *format = "%c, %c, %c, %c, %c";
+    int n1 = sprintf(str1, format, 65, -65, 192, 192, -192);
+    int n2 = s21_sprintf(str2, format, 65, -65, 192, 192, -192);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_c_12
+    char str1[10240], str2[10240];
+    char *format = "%c, %c, %c";
+    int n1 = sprintf(str1, format, '\t', '\n', '\b');
+    int n2 = s21_sprintf(str2, format, '\t', '\n', '\b');
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_d_1
+    char str1[10240], str2[10240];
+    int d = 123;
+    char *format = "%10d, %010d, %-10d, %.6d, %d";
+    int n1 = sprintf(str1, format, (d * 2), 0, (-123 / 2), 5.5, 123456789123456);
+    int n2 = s21_sprintf(str2, format, (d * 2), 0, (-123 / 2), 5.5, 123456789123456);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_d_2
+    char str1[10240], str2[10240];
+    int d = 615;
+    char *format = "%100d, %-15d, %015d, %-015d, %-+#0lhLd";
+    int n1 = sprintf(str1, format, d, d, d, d, d);
+    int n2 = s21_sprintf(str2, format, d, d, d, d, d);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_d_3
+    char str1[10240], str2[10240];
+    int d = -846;
+    char *format = "% 015d, % +015d, % +-015d, %025-d, % 15-0d";
+    int n1 = sprintf(str1, format, d, d, d, d, d);
+    int n2 = s21_sprintf(str2, format, d, d, d, d, d);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+    
+#test sprinrf_d_4
+    char str1[10240], str2[10240];
+    int d = 968;
+    char *format = "%15+0d, %25+15d, %15+000d, %-+# 010d, %.d";
+    int n1 = sprintf(str1, format, d, d, d, d, d);
+    int n2 = s21_sprintf(str2, format, d, d, d, d, d);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+    
+#test sprinrf_d_5
+    char str1[10240], str2[10240];
+    int d = 456800;
+    char *format = "%#10.00d, %#015.00d, %15.d, %20.0+0d, %.15d";
+    int n1 = sprintf(str1, format, d, d, d, d, d);
+    int n2 = s21_sprintf(str2, format, d, d, d, d, d);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_d_6
+    char str1[10240], str2[10240];
+    int d = -1;
+    char *format = "%. 15d, %.-10d, %-. 10d, %015. 010d, %015. -10d";
+    int n1 = sprintf(str1, format, d, d, d, d, d);
+    int n2 = s21_sprintf(str2, format, d, d, d, d, d);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+    
+#test sprinrf_d_7
+    char str1[10240], str2[10240];
+    int d = +45;
+    char *format = "%  .-d, %  .d, %-10.15d, %+-. 10d, %. 10-d";
+    int n1 = sprintf(str1, format, d, d, d, d, d);
+    int n2 = s21_sprintf(str2, format, d, d, d, d, d);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_d_8
+    char str1[10240], str2[10240];
+    int d = 1812;
+    char *format = "%25.015d, %025.015d, %.60d, %#10.15d, %#15.20 10d";
+    int n1 = sprintf(str1, format, d, d, d, d, d);
+    int n2 = s21_sprintf(str2, format, d, d, d, d, d);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+    
+#test sprinrf_d_9
+    char str1[10240], str2[10240];
+    int d = 77;
+    char *format = "%15.10-d, %#+- 0.15d, %+h.hd, %+2.l0d, %0l08d";
+    int n1 = sprintf(str1, format, d, d, d, d, d);
+    int n2 = s21_sprintf(str2, format, d, d, d, d, d);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_1
+    char str1[10240], str2[10240], *s = "Hello World";
+    char *format = "%10s, %010s, %-10s, %.6s, %s";
+    int n1 = sprintf(str1, format, s, "МЕТКА", "S", "?\0", "Hello sunny summer!");
+    int n2 = s21_sprintf(str2, format, s, "МЕТКА", "S", "?\0", "Hello sunny summer!");
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_2
+    char str1[10240], str2[10240], *s = "At least I tried";
+    char *format = "%100s, %-15s, %015s, %-015s, %-+#0hLs";
+    int n1 = sprintf(str1, format, s, s, s, s, s);
+    int n2 = s21_sprintf(str2, format, s, s, s, s, s);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_3
+    char str1[10240], str2[10240], *s = "Answer";
+    char *format = "% 015s, % +015s, % +-015s, %025-s, % 15-0s";
+    int n1 = sprintf(str1, format, s, s, s, s, s);
+    int n2 = s21_sprintf(str2, format, s, s, s, s, s);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_4
+    char str1[10240], str2[10240], *s = "Forty two";
+    char *format = "%15+0s, %25+15s, %15+000s, %-+# 010s, %.s";
+    int n1 = sprintf(str1, format, s, s, s, s, s);
+    int n2 = s21_sprintf(str2, format, s, s, s, s, s);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_5
+    char str1[10240], str2[10240], *s = "Run, Forrest, run!";
+    char *format = "%#10.00s, %#015.00s, %15.s, %20.0+0s, %.15s";
+    int n1 = sprintf(str1, format, s, s, s, s, s);
+    int n2 = s21_sprintf(str2, format, s, s, s, s, s);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_6
+    char str1[10240], str2[10240], *s = "Houston, we have a problem";
+    char *format = "%. 15s, %.-10s, %-. 10s, %015. 010s, %015. -10s";
+    int n1 = sprintf(str1, format, s, s, s, s, s);
+    int n2 = s21_sprintf(str2, format, s, s, s, s, s);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_7
+    char str1[10240], str2[10240], *s = "Let it be";
+    char *format = "%  .-s, %  .s, %-10.15s, %+-. 10s, %. 10-s";
+    int n1 = sprintf(str1, format, s, s, s, s, s);
+    int n2 = s21_sprintf(str2, format, s, s, s, s, s);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_8
+    char str1[10240], str2[10240], *s = "DON'T PANIC!";
+    char *format = "%25.015s, %025.015s, %.60s, %#10.15s, %#15.20 10s";
+    int n1 = sprintf(str1, format, s, s, s, s, s);
+    int n2 = s21_sprintf(str2, format, s, s, s, s, s);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_9
+    char str1[10240], str2[10240], *s = "I’ll be back!";
+    char *format = "%15.10-s, %#+- 0.15s, %+h.hs, %+2.l0s, %0+08s";
+    int n1 = sprintf(str1, format, s, s, s, s, s);
+    int n2 = s21_sprintf(str2, format, s, s, s, s, s);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_10
+    char str1[10240], str2[10240];
+    char *format = "Hello \0 world%c";
+    int n1 = sprintf(str1, format, '!');
+    int n2 = s21_sprintf(str2, format, '!');
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_11
+    char str1[10240], str2[10240];
+    char *format = "\033[32m Hello world %c\033[0m";
+    int n1 = sprintf(str1, format, '!');
+    int n2 = s21_sprintf(str2, format, '!');
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_12
+    char str1[10240], str2[10240];
+    char *format = "Hello %s";
+    char *s = NULL;
+    int n1 = sprintf(str1, format, s);
+    int n2 = s21_sprintf(str2, format, s);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_13
+    char str1[10240], str2[10240];
+    char *format = "Привет %s";
+    int n1 = sprintf(str1, format, "мир!");
+    int n2 = s21_sprintf(str2, format, "мир!");
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_s_14
+    char str1[10240], str2[10240];
+    char *format = "Hello%s";
+    int n1 = sprintf(str1, format, " \0world!");
+    int n2 = s21_sprintf(str2, format, " \0world!");
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_f_1
+    char str1[10240], str2[10240];
+    float f = 0;
+    char *format = "%10f, %010f, %-10f, %.16f, %f";
+    int n1 =  sprintf(str1, format, f, 0.0, -123, 586, 123456789123456.123456789);
+    int n2 =  s21_sprintf(str2, format, f, 0.0, -123, 586, 123456789123456.123456789);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_f_2
+    char str1[10240], str2[10240];
+    float f = 123.456;
+    char *format = "%100f, %-15f, %015f, %-015f, %-+#0lhLf";
+    int n1 = sprintf(str1, format, f, f, f, f, f);
+    int n2 = s21_sprintf(str2, format, f, f, f, f, f);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_f_3
+    char str1[10240], str2[10240];
+    float f = -123.456;
+    char *format = "% 015f, % +015f, % +-015f, %025-f, % 15-0f";
+    int n1 = sprintf(str1, format, f, f, f, f, f);
+    int n2 = s21_sprintf(str2, format, f, f, f, f, f);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_f_4
+    char str1[10240], str2[10240];
+    float f = -1.987654321123456789;
+    char *format = "%15+0f, %25+15f, %15+000f, %-+# 010f, %.f";
+    int n1 = sprintf(str1, format, f, f, f, f, f);
+    int n2 = s21_sprintf(str2, format, f, f, f, f, f);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_f_5
+    char str1[10240], str2[10240];
+    float f = 1.987654321123456789;
+    char *format = "%#10.00f, %#015.00f, %15.f, %20.0+0f, %.15f";
+    int n1 = sprintf(str1, format, f, f, f, f, f);
+    int n2 =  s21_sprintf(str2, format, f, f, f, f, f);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+    
+#test sprinrf_f_6
+    char str1[10240], str2[10240];
+    float f = -1.987654321123456789;
+    char *format = "%. 15f, %.-10f, %-. 10f, %015. 010f, %015. -10f";
+    int n1 = sprintf(str1, format, f, f, f, f, f);
+    int n2 = s21_sprintf(str2, format, f, f, f, f, f);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_f_7
+    char str1[10240], str2[10240];
+    float f = 1.987654321123456789;
+    char *format = "%  .-f, %  .f, %-10.15f, %+-. 10f, %. 10-f";
+    int n1 = sprintf(str1, format, f, f, f, f, f);
+    int n2 = s21_sprintf(str2, format, f, f, f, f, f);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_f_8
+    char str1[10240], str2[10240];
+    float f = -1.987654321123456789;
+    char *format = "%25.015f, %025.015f, %.60f, %#10.15f, %#15.20 10f";
+    int n1 = sprintf(str1, format, f, f, f, f, f);
+    int n2 = s21_sprintf(str2, format, f, f, f, f, f);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_f_9
+    char str1[10240], str2[10240];
+    float f = 987654321.123456789;
+    char *format = "%15.10-f, %#+- 0.15f, %+h.hf, %+2.l0f, %0l08f";
+    int n1 = sprintf(str1, format, f, f, f, f, f);
+    int n2 = s21_sprintf(str2, format, f, f, f, f, f);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_f_10
+    char str1[10240], str2[10240];
+    char *format = "%.2f, %.20f, %.0f, %.2f, %f";
+    int n1 = sprintf(str1, format, 9.999, 123.456, (float)0, (float)15, 0.0);
+    int n2 = s21_sprintf(str2, format, 9.999, 123.456, (float)0, (float)15, 0.0);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_f_11
+    char str1[10240], str2[10240];
+    char *format = "%.2f, %.4f, %.6f, %.8f, %.10f";
+    double arg = 495.495495495495495;
+    int n1 = sprintf(str1, format, arg, arg, arg, arg, arg);
+    int n2 = s21_sprintf(str2, format, arg, arg, arg, arg, arg);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_f_12
+    char str1[10240], str2[10240];
+    char *format = "%.60f";
+    double arg = 123456789.9223372036854775807;
+    int n1 = sprintf(str1, format, arg);
+    int n2 = s21_sprintf(str2, format, arg);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
+
+#test sprinrf_f_13
+    char str1[10240], str2[10240];
+    char *format = "%.40f, %.40Lf";
+    double arg = 0.92233720368547758079223372036854775807;
+    int n1 = sprintf(str1, format, arg, arg, arg, arg, arg);
+    int n2 = s21_sprintf(str2, format, arg, arg, arg, arg, arg);
+    ck_assert_int_eq(n1, n2);
+    ck_assert_str_eq(str1, str2);
